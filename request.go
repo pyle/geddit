@@ -19,7 +19,7 @@ type request struct {
 	useragent string
 }
 
-func (r request) getResponse() (*bytes.Buffer, error) {
+func (r request) getResponse(c *http.Client) (*bytes.Buffer, error) {
 	// Determine the HTTP action.
 	var action, finalurl string
 	if r.values == nil {
@@ -41,7 +41,7 @@ func (r request) getResponse() (*bytes.Buffer, error) {
 	req.Header.Set("User-Agent", r.useragent)
 
 	// Handle the request
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := c.Do(req)
 	if err != nil {
 		return nil, err
 	}

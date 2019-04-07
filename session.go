@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"image"
 	"image/png"
+	"net/http"
 
 	"github.com/google/go-querystring/query"
 )
@@ -17,12 +18,14 @@ import (
 // without logging into an account.
 type Session struct {
 	useragent string
+	c         *http.Client
 }
 
 // NewSession creates a new unauthenticated session to reddit.com.
-func NewSession(useragent string) *Session {
+func NewSession(useragent string, c *http.Client) *Session {
 	return &Session{
 		useragent: useragent,
+		c:         c,
 	}
 }
 
@@ -51,7 +54,7 @@ func (s Session) SubredditSubmissions(subreddit string, sort PopularitySort, par
 		url:       redditUrl,
 		useragent: s.useragent,
 	}
-	body, err := req.getResponse()
+	body, err := req.getResponse(s.c)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +91,7 @@ func (s Session) SubmissionsComments(submissionID string) ([]*Comment, error) {
 		url:       redditURL,
 		useragent: s.useragent,
 	}
-	body, err := req.getResponse()
+	body, err := req.getResponse(s.c)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +113,7 @@ func (s Session) AboutRedditor(username string) (*Redditor, error) {
 		url:       fmt.Sprintf("https://www.reddit.com/user/%s/about.json", username),
 		useragent: s.useragent,
 	}
-	body, err := req.getResponse()
+	body, err := req.getResponse(s.c)
 	if err != nil {
 		return nil, err
 	}
@@ -133,7 +136,7 @@ func (s Session) AboutSubreddit(subreddit string) (*Subreddit, error) {
 		url:       fmt.Sprintf("https://www.reddit.com/r/%s/about.json", subreddit),
 		useragent: s.useragent,
 	}
-	body, err := req.getResponse()
+	body, err := req.getResponse(s.c)
 	if err != nil {
 		return nil, err
 	}
@@ -157,7 +160,7 @@ func (s Session) Comments(h *Submission) ([]*Comment, error) {
 		url:       fmt.Sprintf("https://www.reddit.com/comments/%s/.json", h.ID),
 		useragent: s.useragent,
 	}
-	body, err := req.getResponse()
+	body, err := req.getResponse(s.c)
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +183,7 @@ func (s Session) CaptchaImage(iden string) (image.Image, error) {
 		useragent: s.useragent,
 	}
 
-	p, err := req.getResponse()
+	p, err := req.getResponse(s.c)
 
 	if err != nil {
 		return nil, err
@@ -216,7 +219,7 @@ func (s Session) SubredditComments(subreddit string, params ListingOptions) ([]*
 		useragent: s.useragent,
 	}
 
-	body, err := req.getResponse()
+	body, err := req.getResponse(s.c)
 	if err != nil {
 		return nil, err
 	}
@@ -252,7 +255,7 @@ func (s Session) RedditorComments(username string, params ListingOptions) ([]*Co
 		useragent: s.useragent,
 	}
 
-	body, err := req.getResponse()
+	body, err := req.getResponse(s.c)
 	if err != nil {
 		return nil, err
 	}
@@ -287,7 +290,7 @@ func (s Session) RedditorSubmissions(username string, params ListingOptions) ([]
 		url:       redditUrl,
 		useragent: s.useragent,
 	}
-	body, err := req.getResponse()
+	body, err := req.getResponse(s.c)
 	if err != nil {
 		return nil, err
 	}

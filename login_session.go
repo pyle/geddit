@@ -30,12 +30,12 @@ type LoginSession struct {
 
 // NewLoginSession creates a new session for those who want to log into a
 // reddit account.
-func NewLoginSession(username, password, useragent string) (*LoginSession, error) {
+func NewLoginSession(username, password, useragent string, c *http.Client) (*LoginSession, error) {
 	session := &LoginSession{
 		username:  username,
 		password:  password,
 		useragent: useragent,
-		Session:   Session{useragent},
+		Session:   Session{useragent, c},
 	}
 
 	loginURL := fmt.Sprintf("https://www.reddit.com/api/login/%s", username)
@@ -52,7 +52,7 @@ func NewLoginSession(username, password, useragent string) (*LoginSession, error
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("User-Agent", useragent)
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := c.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +107,7 @@ func (s LoginSession) Clear() error {
 		},
 		useragent: s.useragent,
 	}
-	body, err := req.getResponse()
+	body, err := req.getResponse(s.Session.c)
 	if err != nil {
 		return err
 	}
@@ -138,7 +138,7 @@ func (s LoginSession) Frontpage(sort PopularitySort, params ListingOptions) ([]*
 		cookie:    s.cookie,
 		useragent: s.useragent,
 	}
-	body, err := req.getResponse()
+	body, err := req.getResponse(s.Session.c)
 	if err != nil {
 		return nil, err
 	}
@@ -171,7 +171,7 @@ func (s LoginSession) Me() (*Redditor, error) {
 		cookie:    s.cookie,
 		useragent: s.useragent,
 	}
-	body, err := req.getResponse()
+	body, err := req.getResponse(s.Session.c)
 	if err != nil {
 		return nil, err
 	}
@@ -217,7 +217,7 @@ func (s LoginSession) Submit(ns *NewSubmission) error {
 		useragent: s.useragent,
 	}
 
-	body, err := req.getResponse()
+	body, err := req.getResponse(s.Session.c)
 	if err != nil {
 		return err
 	}
@@ -239,7 +239,7 @@ func (s LoginSession) Vote(v Voter, vote Vote) error {
 		cookie:    s.cookie,
 		useragent: s.useragent,
 	}
-	body, err := req.getResponse()
+	body, err := req.getResponse(s.Session.c)
 	if err != nil {
 		return err
 	}
@@ -262,7 +262,7 @@ func (s LoginSession) Reply(r Replier, comment string) error {
 		useragent: s.useragent,
 	}
 
-	body, err := req.getResponse()
+	body, err := req.getResponse(s.Session.c)
 	if err != nil {
 		return err
 	}
@@ -286,7 +286,7 @@ func (s LoginSession) Delete(d Deleter) error {
 		useragent: s.useragent,
 	}
 
-	body, err := req.getResponse()
+	body, err := req.getResponse(s.Session.c)
 	if err != nil {
 		return err
 	}
@@ -306,7 +306,7 @@ func (s LoginSession) NeedsCaptcha() (bool, error) {
 		useragent: s.useragent,
 	}
 
-	body, err := req.getResponse()
+	body, err := req.getResponse(s.Session.c)
 
 	if err != nil {
 		return false, err
@@ -331,7 +331,7 @@ func (s LoginSession) NewCaptchaIden() (string, error) {
 		cookie:    s.cookie,
 		useragent: s.useragent,
 	}
-	body, err := req.getResponse()
+	body, err := req.getResponse(s.Session.c)
 	if err != nil {
 		return "", err
 	}
@@ -371,7 +371,7 @@ func (s LoginSession) Listing(username, listing string, sort PopularitySort, aft
 		useragent: s.useragent,
 	}
 
-	body, err := req.getResponse()
+	body, err := req.getResponse(s.Session.c)
 	if err != nil {
 		return nil, err
 	}

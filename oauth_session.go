@@ -48,7 +48,7 @@ type OAuthSession struct {
 
 // NewOAuthSession creates a new session for those who want to log into a
 // reddit account via OAuth.
-func NewOAuthSession(clientID, clientSecret, useragent, redirectURL string) (*OAuthSession, error) {
+func NewOAuthSession(clientID, clientSecret, useragent, redirectURL string, c *http.Client) (*OAuthSession, error) {
 	o := &OAuthSession{}
 
 	if len(useragent) > 0 {
@@ -69,9 +69,9 @@ func NewOAuthSession(clientID, clientSecret, useragent, redirectURL string) (*OA
 	}
 	// Inject our custom HTTP client so that a user-defined UA can
 	// be passed during any authentication requests.
-	c := &http.Client{}
-	c.Transport = &transport{http.DefaultTransport, o.UserAgent}
-	o.ctx = context.WithValue(context.Background(), oauth2.HTTPClient, c)
+	o.Client = c
+	o.Client.Transport = &transport{http.DefaultTransport, o.UserAgent}
+	o.ctx = context.WithValue(context.Background(), oauth2.HTTPClient, o.Client)
 	return o, nil
 }
 
@@ -665,7 +665,7 @@ func (o *OAuthSession) SubredditComments(subreddit string) ([]*Comment, error) {
 		useragent: o.UserAgent,
 	}
 
-	body, err := req.getResponse()
+	body, err := req.getResponse(o.Client)
 	if err != nil {
 		return nil, err
 	}
