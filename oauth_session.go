@@ -36,10 +36,8 @@ func (t *transport) RoundTrip(req *http.Request) (resp *http.Response, err error
 // OAuthSession represents an OAuth session with reddit.com --
 // all authenticated API calls are methods bound to this type.
 type OAuthSession struct {
-	Client       *http.Client
-	ClientID     string
-	ClientSecret string
-	OAuthConfig  *oauth2.Config
+	Client      *http.Client
+	OAuthConfig *oauth2.Config
 	//TokenExpiry  time.Time
 	UserAgent string
 	ctx       context.Context

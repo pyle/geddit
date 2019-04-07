@@ -5,7 +5,6 @@
 package geddit
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -51,13 +50,26 @@ func testTools(code int, body string) (*httptest.Server, *OAuthSession) {
 
 // Test defaults o fresh OAuthSession type.
 func TestNewOAuthSession(t *testing.T) {
-	o, err := NewOAuthSession("user", "pw", "agent", "http://")
+	// server := httptest.NewServer()
+	o, err := NewOAuthSession("user", "pw", "agent", "http://", &http.Client{})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if o.Client != nil {
-		t.Fatal(errors.New("HTTP client created before auth token!"))
+	if o.OAuthConfig.ClientID != "user" {
+		t.Errorf("o.OAuthConfig.ClientID is incorrect, expected 'user', got %v", o.OAuthConfig.ClientID)
+	}
+	if o.OAuthConfig.ClientSecret != "pw" {
+		t.Errorf("o.OAuthConfig.ClientSecret is incorrect, expected 'pw', got %v", o.OAuthConfig.ClientSecret)
+	}
+	if o.OAuthConfig.RedirectURL != "http://" {
+		t.Errorf("o.OAuthConfig.RedirectURL is incorrect, expected 'http://', got %v", o.OAuthConfig.RedirectURL)
+	}
+	if o.UserAgent != "agent" {
+		t.Errorf("o.UserAgent is incorrect, expected 'agent', got %v", o.UserAgent)
+	}
+	if o.Client == nil {
+		t.Error("http client not created")
 	}
 }
 
