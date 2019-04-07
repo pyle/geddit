@@ -5,6 +5,7 @@
 package geddit
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -50,8 +51,7 @@ func testTools(code int, body string) (*httptest.Server, *OAuthSession) {
 
 // Test defaults o fresh OAuthSession type.
 func TestNewOAuthSession(t *testing.T) {
-	// server := httptest.NewServer()
-	o, err := NewOAuthSession("user", "pw", "agent", "http://", &http.Client{})
+	o, err := NewOAuthSession(context.Background(), "user", "pw", "agent", "http://", &http.Client{})
 	if err != nil {
 		t.Fatal(err)
 	}

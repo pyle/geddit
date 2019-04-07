@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Package reddit implements an abstraction for the reddit.com API.
+// Package geddit implements an abstraction for the reddit.com API.
 package geddit
 
 import (
@@ -46,7 +46,7 @@ type OAuthSession struct {
 
 // NewOAuthSession creates a new session for those who want to log into a
 // reddit account via OAuth.
-func NewOAuthSession(clientID, clientSecret, useragent, redirectURL string, c *http.Client) (*OAuthSession, error) {
+func NewOAuthSession(ctx context.Context, clientID, clientSecret, useragent, redirectURL string, c *http.Client) (*OAuthSession, error) {
 	o := &OAuthSession{}
 
 	if len(useragent) > 0 {
@@ -68,14 +68,14 @@ func NewOAuthSession(clientID, clientSecret, useragent, redirectURL string, c *h
 	// Inject our custom HTTP client so that a user-defined UA can
 	// be passed during any authentication requests.
 	o.Client = c
-	o.Client.Transport = &transport{http.DefaultTransport, o.UserAgent}
-	o.ctx = context.WithValue(context.Background(), oauth2.HTTPClient, o.Client)
+	o.Client.Transport = &transport{c.Transport, o.UserAgent}
+	o.ctx = context.WithValue(ctx, oauth2.HTTPClient, c)
 	return o, nil
 }
 
 // Throttle sets the interval of each HTTP request.
 // Disable by setting interval to 0. Disabled by default.
-// Throttling is applied to invidual OAuthSession types.
+// Throttling is applied to individual OAuthSession types.
 func (o *OAuthSession) Throttle(interval time.Duration) {
 	if interval == 0 {
 		o.throttle = nil
